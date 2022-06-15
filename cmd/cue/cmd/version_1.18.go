@@ -24,33 +24,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/spf13/cobra"
 	"golang.org/x/mod/module"
-)
-
-func newVersionCmd(c *Command) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "version",
-		Short: "print CUE version",
-		Long:  ``,
-		RunE:  mkRunE(c, runVersion),
-	}
-	return cmd
-}
-
-const (
-	defaultVersion = "(devel)"
-)
-
-// version be set by a builder using
-// -ldflags='-X cuelang.org/go/cmd/cue/cmd.version=<version>'.
-// However, people should prefer building via a mechanism which
-// resolves cuelang.org/go as a dependency (and not the main
-// module), in which case the version information is determined
-// from the *debug.BuildInfo (see below). So this mechanism is
-// really considered legacy.
-var (
-	version = defaultVersion
 )
 
 func runVersion(cmd *Command, args []string) error {
@@ -58,6 +32,7 @@ func runVersion(cmd *Command, args []string) error {
 	// read in build info
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
+		// fall back to
 		// shouldn't happen
 		return errors.New("unknown error reading build-info")
 	}
@@ -108,7 +83,7 @@ func runVersion(cmd *Command, args []string) error {
 	fmt.Fprintf(w, "cue version %v\n\n", version)
 	for _, s := range bi.Settings {
 		if s.Value == "" {
-			// skip empty build-settings
+			// skip empty build settings
 			continue
 		}
 		// The padding helps keep readability by aligning:
